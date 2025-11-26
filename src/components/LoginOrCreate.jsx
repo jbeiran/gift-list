@@ -31,8 +31,6 @@ const LoginOrCreate = () => {
       };
 
       const docRef = await addDoc(collection(db, "lists"), newList);
-      
-      // Guardar sesión antes de redirigir
       sessionStorage.setItem(
         `auth_${docRef.id}`,
         JSON.stringify({
@@ -64,8 +62,6 @@ const LoginOrCreate = () => {
 
       if (!querySnapshot.empty) {
         const listId = querySnapshot.docs[0].id;
-        
-        // Guardar sesión antes de redirigir
         sessionStorage.setItem(
           `auth_${listId}`,
           JSON.stringify({
