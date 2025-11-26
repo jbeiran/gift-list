@@ -60,6 +60,11 @@ const GuestView = () => {
           <p className="text-gray-600">
             Lista de regalos de {listData.ownerName}
           </p>
+          {listData.listDescription && (
+            <p className="text-gray-700 mt-3 bg-blue-50 p-3 rounded-lg">
+              {listData.listDescription}
+            </p>
+          )}
           <p className="text-sm text-gray-500 mt-2">
             Selecciona un regalo para solicitar comprarlo 🎁
           </p>

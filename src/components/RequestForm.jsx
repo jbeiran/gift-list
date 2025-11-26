@@ -13,7 +13,14 @@ const RequestForm = ({ gift, listId, listData, onClose, onSuccess }) => {
 
     try {
       const updatedGifts = listData.gifts.map((g) =>
-        g.id === gift.id ? { ...g, status: "pending", requestedBy: name } : g
+        g.id === gift.id
+          ? {
+              ...g,
+              status: "assigned",
+              requestedBy: name,
+              approvedByOwner: true,
+            } 
+          : g
       );
 
       await updateDoc(doc(db, "lists", listId), { gifts: updatedGifts });
@@ -61,10 +68,11 @@ const RequestForm = ({ gift, listId, listData, onClose, onSuccess }) => {
             />
           </div>
 
-          <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              ⚠️ Tu solicitud quedará pendiente hasta que {listData.ownerName}{" "}
-              la apruebe.
+          {/* ← CAMBIO AQUÍ: Nuevo mensaje */}
+          <div className="bg-green-100 border border-green-300 rounded-lg p-4">
+            <p className="text-sm text-green-800">
+              🎉 ¡Este regalo quedará reservado inmediatamente! Será una
+              sorpresa para {listData.ownerName}.
             </p>
           </div>
 
@@ -81,7 +89,7 @@ const RequestForm = ({ gift, listId, listData, onClose, onSuccess }) => {
               disabled={loading}
               className="flex-1 bg-christmas-red text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50"
             >
-              {loading ? "Enviando..." : "Confirmar 🎁"}
+              {loading ? "Reservando..." : "Confirmar 🎁"}
             </button>
           </div>
         </form>

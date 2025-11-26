@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { db } from "../firebase/config";
 import { doc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 
-const GiftForm = ({ listId, listData, onSuccess }) => {
+const GiftForm = ({ listId, listData, onSuccess, editingGift = null }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -14,27 +14,55 @@ const GiftForm = ({ listId, listData, onSuccess }) => {
   });
   const [loading, setLoading] = useState(false);
 
+  // Si estamos editando, cargar los datos del regalo
+  useEffect(() => {
+    if (editingGift) {
+      setFormData({
+        name: editingGift.name || "",
+        description: editingGift.description || "",
+        url: editingGift.url || "",
+        price: editingGift.price || "",
+        image: editingGift.image || "",
+      });
+    }
+  }, [editingGift]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const newGift = {
-        id: uuidv4(),
-        ...formData,
-        price: parseFloat(formData.price) || 0,
-        status: "available",
-        requestedBy: null,
-        approvedByOwner: null,
-      };
+      let updatedGifts;
 
-      const updatedGifts = [...listData.gifts, newGift];
+      if (editingGift) {
+        // Modo edición: actualizar el regalo existente
+        updatedGifts = listData.gifts.map((gift) =>
+          gift.id === editingGift.id
+            ? {
+                ...gift,
+                ...formData,
+                price: parseFloat(formData.price) || 0,
+              }
+            : gift
+        );
+      } else {
+        // Modo creación: añadir nuevo regalo
+        const newGift = {
+          id: uuidv4(),
+          ...formData,
+          price: parseFloat(formData.price) || 0,
+          status: "available",
+          requestedBy: null,
+          approvedByOwner: null,
+        };
+        updatedGifts = [...listData.gifts, newGift];
+      }
+
       await updateDoc(doc(db, "lists", listId), { gifts: updatedGifts });
-
       onSuccess();
     } catch (error) {
-      console.error("Error adding gift:", error);
-      alert("Error al añadir el regalo");
+      console.error("Error saving gift:", error);
+      alert("Error al guardar el regalo");
     } finally {
       setLoading(false);
     }
@@ -47,7 +75,7 @@ const GiftForm = ({ listId, listData, onSuccess }) => {
       className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6"
     >
       <h2 className="text-2xl font-bold text-christmas-green mb-4">
-        ➕ Añadir nuevo regalo
+        {editingGift ? "✏️ Editar regalo" : "➕ Añadir nuevo regalo"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -125,7 +153,11 @@ const GiftForm = ({ listId, listData, onSuccess }) => {
           disabled={loading}
           className="w-full bg-christmas-green text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50"
         >
-          {loading ? "Añadiendo..." : "🎁 Añadir regalo"}
+          {loading
+            ? "Guardando..."
+            : editingGift
+            ? "💾 Guardar cambios"
+            : "🎁 Añadir regalo"}
         </button>
       </form>
     </motion.div>

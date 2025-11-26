@@ -10,6 +10,7 @@ const LoginOrCreate = () => {
   const [ownerName, setOwnerName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [listName, setListName] = useState("");
+  const [listDescription, setListDescription] = useState("");
   const [accessCode, setAccessCode] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -23,12 +24,23 @@ const LoginOrCreate = () => {
         ownerName,
         ownerEmail,
         listName,
+        listDescription,
         accessCode: uuidv4().slice(0, 8),
         gifts: [],
         createdAt: new Date().toISOString(),
       };
 
       const docRef = await addDoc(collection(db, "lists"), newList);
+      
+      // Guardar sesión antes de redirigir
+      sessionStorage.setItem(
+        `auth_${docRef.id}`,
+        JSON.stringify({
+          email: ownerEmail,
+          timestamp: Date.now(),
+        })
+      );
+
       navigate(`/admin/${docRef.id}`);
     } catch (error) {
       console.error("Error creating list:", error);
@@ -52,6 +64,16 @@ const LoginOrCreate = () => {
 
       if (!querySnapshot.empty) {
         const listId = querySnapshot.docs[0].id;
+        
+        // Guardar sesión antes de redirigir
+        sessionStorage.setItem(
+          `auth_${listId}`,
+          JSON.stringify({
+            email: ownerEmail,
+            timestamp: Date.now(),
+          })
+        );
+
         navigate(`/admin/${listId}`);
       } else {
         alert("Email o código de acceso incorrecto");
@@ -140,6 +162,18 @@ const LoginOrCreate = () => {
                 placeholder="Ej: Regalos de Ana 🎄"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-christmas-red focus:border-transparent"
                 required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Descripción de tu lista (opcional)
+              </label>
+              <textarea
+                value={listDescription}
+                onChange={(e) => setListDescription(e.target.value)}
+                placeholder="Ej: Ideas de regalos para esta Navidad 🎅"
+                rows="3"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-christmas-red focus:border-transparent resize-none"
               />
             </div>
             <button

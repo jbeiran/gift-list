@@ -1,18 +1,12 @@
 import { motion } from "framer-motion";
 
-const GiftCard = ({ gift, isAdmin, onRequest, onDelete }) => {
+const GiftCard = ({ gift, isAdmin, onRequest, onDelete, onEdit }) => {
   const getStatusBadge = () => {
     switch (gift.status) {
       case "assigned":
         return (
           <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-            ✅ Asignado
-          </span>
-        );
-      case "pending":
-        return (
-          <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-            ⏳ Pendiente
+            ✅ Reservado
           </span>
         );
       default:
@@ -29,10 +23,10 @@ const GiftCard = ({ gift, isAdmin, onRequest, onDelete }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -5 }}
-      className="bg-white rounded-2xl shadow-lg overflow-hidden"
+      className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col h-full"
     >
       {gift.image && (
-        <div className="h-48 overflow-hidden bg-gray-200">
+        <div className="h-48 overflow-hidden bg-gray-200 shrink-0">
           <img
             src={gift.image}
             alt={gift.name}
@@ -40,10 +34,11 @@ const GiftCard = ({ gift, isAdmin, onRequest, onDelete }) => {
           />
         </div>
       )}
-      <div className="p-5">
+      <div className="p-5 flex flex-col grow">
         <div className="flex justify-between items-start mb-3">
           <h3 className="text-xl font-bold text-gray-800">{gift.name}</h3>
-          {getStatusBadge()}
+          {/* Solo mostrar el badge si NO es admin */}
+          {!isAdmin && getStatusBadge()}
         </div>
 
         {gift.description && (
@@ -51,26 +46,23 @@ const GiftCard = ({ gift, isAdmin, onRequest, onDelete }) => {
         )}
 
         {gift.price > 0 && (
-          <p className="text-christmas-gold font-bold text-lg mb-3">
+          <p className="text-christmas-green font-bold text-lg mb-3">
             {gift.price.toFixed(2)} €
           </p>
         )}
 
-        {gift.status === "assigned" && gift.requestedBy && (
+        {/* Solo mostrar quién lo eligió si NO es admin */}
+        {!isAdmin && gift.status === "assigned" && gift.requestedBy && (
           <p className="text-sm text-green-700 mb-3">
-            🎁 Comprado por:{" "}
+            🎁 Elegido por:{" "}
             <span className="font-semibold">{gift.requestedBy}</span>
           </p>
         )}
 
-        {gift.status === "pending" && gift.requestedBy && !isAdmin && (
-          <p className="text-sm text-yellow-700 mb-3">
-            ⏳ Solicitado por:{" "}
-            <span className="font-semibold">{gift.requestedBy}</span>
-          </p>
-        )}
+        {/* Espaciador que empuja los botones hacia abajo */}
+        <div className="grow"></div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-auto">
           {gift.url && (
             <a
               href={gift.url}
@@ -92,12 +84,20 @@ const GiftCard = ({ gift, isAdmin, onRequest, onDelete }) => {
           )}
 
           {isAdmin && (
-            <button
-              onClick={onDelete}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition text-sm font-semibold"
-            >
-              🗑️
-            </button>
+            <>
+              <button
+                onClick={onEdit}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition text-sm font-semibold"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={onDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition text-sm font-semibold"
+              >
+                🗑️
+              </button>
+            </>
           )}
         </div>
       </div>
